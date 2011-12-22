@@ -10,6 +10,7 @@ import yetanotherx.redditbot.api.data.LinkData;
 import yetanotherx.redditbot.api.modules.ExternalDomain;
 import yetanotherx.redditbot.api.modules.RedditCore;
 import yetanotherx.redditbot.api.modules.RedditLink;
+import yetanotherx.redditbot.api.modules.RedditSubreddit;
 import yetanotherx.redditbot.http.Transport;
 import yetanotherx.redditbot.http.request.Request;
 import yetanotherx.redditbot.http.request.RequestType;
@@ -33,26 +34,62 @@ public class MainPlugin extends RedditPlugin {
 
         ExternalDomain dom = ExternalDomain.newFromDomain(this, "dl.dropbox.com");
         for (LinkData link : dom.getUsages()) {
+            RedditLink newLin = RedditLink.newFromLink(this, link);
 
             System.out.println("--------------------------------------------");
+            System.out.println(link.getTitle());
+            System.out.println();
+            System.out.println();
+            
+            try {
 
-            RedditLink newLin = RedditLink.newFromLink(this, link);
-            System.out.println("Starting to parse: " + newLin.getLinkData().getTitle());
-
-            boolean quit = false;
-            for (CommentData dat : newLin.getComments()) {
-                if (dat.getAuthor().equals("dropbox_mirror") || dat.getAuthor().equals("imgur-mirror-bot")) {
-                    System.out.println("I've been beat! (or I already posted...)");
-                    quit = true;
+                RedditSubreddit sr = RedditSubreddit.newFromName(this, link.getSubreddit());
+                System.out.println("Posted to subreddit " + sr.getSubredditData().getDisplayName() + " (" + sr.getSubredditData().getSubscribers() + " subscribers)");
+                if (sr.getSubredditData().getSubscribers() < 7500) {
+                    throw new DoQuitError("Subreddit does not have enough people to bother rehosting image.");
                 }
-            }
 
-            if (quit) {
+
+                for (CommentData dat : newLin.getComments()) {
+                    if (dat.getAuthor().equals("dropbox_mirror")) {
+                        throw new DoQuitError("I've already posted here! Nothing to do here...");
+                    }
+
+                    if (dat.getAuthor().equals("imgur-mirror-bot")) {
+                        throw new DoQuitError("Oh no, imgur-mirror-bot beat me!");
+                    }
+                }
+
+
+                if (!link.getURL().endsWith(".jpg") && !link.getURL().endsWith(".gif") && !link.getURL().endsWith(".png") && !link.getURL().endsWith(".jpeg")) {
+                    throw new DoQuitError("It's not an image. Not gonna go on.");
+                }
+
+                Request request = new WebRequest(this);
+                request.setURL(link.getURL());
+                Transport transport = this.getTransport();
+                transport.setRequest(request);
+
+                Response response = transport.sendURL();
+                if (response.getHTTPCode().getCode() == 509) {
+                    throw new DoQuitError("Oh no! I'm too late! The image already 509'd!");
+                }
+                
+                if( response.getContent().length() > 2000000 ) {
+                    throw new DoQuitError("Image is too large to upload to imgur. Image size: " + (response.getContent().length() / 1000000) + " megabytes");
+                }
+
+            } catch (DoQuitError e) {
+                System.out.println(e.getMessage());
+                Thread.sleep(2000);
+                continue;
+            } catch (Exception e) {
+                e.printStackTrace();
                 Thread.sleep(2000);
                 continue;
             }
 
-            Transport transport = this.getTransport();
+            System.out.println("Looks like we can upload to imgur! Link: " + link.getURL());
 
             HashMap<String, String> map = new EasyHashMap<String, String>(
                     "image", link.getURL(),
@@ -60,27 +97,21 @@ public class MainPlugin extends RedditPlugin {
                     "key", key,
                     "type", "url");
 
-            if (!link.getURL().endsWith(".jpg") && !link.getURL().endsWith(".gif") && !link.getURL().endsWith(".png") && !link.getURL().endsWith(".jpeg")) {
-                System.out.println("It's not an image. Not gonna go on.");
-                Thread.sleep(2000);
-                continue;
-            }
+            Request req = new WebRequest(this, map);
+            req.setURL("http://api.imgur.com/2/upload.json");
+            req.setMethod(RequestType.POST);
+            Transport tp = this.getTransport();
+            tp.setRequest(req);
 
-            System.out.println("Uploading " + link.getURL() + " to imgur!");
-            Request request = new WebRequest(this, map);
-            request.setURL("http://api.imgur.com/2/upload.json");
-            request.setMethod(RequestType.POST);
-            transport.setRequest(request);
-
-            Response response = null;
+            Response resp = null;
             try {
-                response = transport.sendURL();
-                JSONResult json = response.getJSONResult();
-                if (json.getString("upload/links/original") != null) {
+                resp = tp.sendURL();
+                JSONResult json = resp.getJSONResult();
+                String url = json.getString("upload/links/original");
 
-                    String url = json.getString("upload/links/original");
-
+                if (url != null) {
                     System.out.println("Upload successful! URL: " + url);
+
                     StringBuilder text = new StringBuilder();
                     text.append("Image rehosted on to Imgur from Dropbox. (BETA - [why?](http://www.reddit.com/r/DropboxMirror/comments/njpab/about_dropbox_mirror_reddit_bot/))");
                     text.append("\n\n");
@@ -91,15 +122,18 @@ public class MainPlugin extends RedditPlugin {
                     text.append(")\n\n");
                     text.append("*Was this a mistake, or is there a bug? Message [yetanotherx](http://reddit.com/user/yetanotherx)!*");
                     newLin.doReply(text.toString());
+
+                    System.out.println("All done! Sleeping for 10 minutes");
                     Thread.sleep(600000);//10 minutes
+
                 } else {
                     System.out.println("Something went wrong....");
-                    System.out.println(response.getContent());
+                    System.out.println(resp.getContent());
                 }
             } catch (Exception e) {
                 System.out.println("Something went wrong....");
-                if (response != null) {
-                    System.out.println(response.getContent());
+                if (resp != null) {
+                    System.out.println(resp.getContent());
                 }
                 e.printStackTrace();
             }
