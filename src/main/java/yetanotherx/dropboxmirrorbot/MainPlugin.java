@@ -36,9 +36,8 @@ public class MainPlugin extends RedditPlugin {
         for (LinkData link : dom.getUsages()) {
             RedditLink newLin = RedditLink.newFromLink(this, link);
 
-            System.out.println("--------------------------------------------");
+            System.out.println("\n--------------------------------------------");
             System.out.println(link.getTitle());
-            System.out.println();
             System.out.println();
             
             try {
