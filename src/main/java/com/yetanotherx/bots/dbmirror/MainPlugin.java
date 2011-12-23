@@ -1,23 +1,23 @@
-package yetanotherx.dropboxmirrorbot;
+package com.yetanotherx.bots.dbmirror;
 
 import com.beust.jcommander.JCommander;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import yetanotherx.redditbot.RedditPlugin;
-import yetanotherx.redditbot.api.data.CommentData;
-import yetanotherx.redditbot.api.data.LinkData;
-import yetanotherx.redditbot.api.modules.ExternalDomain;
-import yetanotherx.redditbot.api.modules.RedditCore;
-import yetanotherx.redditbot.api.modules.RedditLink;
-import yetanotherx.redditbot.api.modules.RedditSubreddit;
-import yetanotherx.redditbot.http.Transport;
-import yetanotherx.redditbot.http.request.Request;
-import yetanotherx.redditbot.http.request.RequestType;
-import yetanotherx.redditbot.http.request.WebRequest;
-import yetanotherx.redditbot.http.response.JSONResult;
-import yetanotherx.redditbot.http.response.Response;
-import yetanotherx.redditbot.util.collections.EasyHashMap;
+import com.yetanotherx.reddit.RedditPlugin;
+import com.yetanotherx.reddit.api.data.CommentData;
+import com.yetanotherx.reddit.api.data.LinkData;
+import com.yetanotherx.reddit.api.modules.ExternalDomain;
+import com.yetanotherx.reddit.api.modules.RedditCore;
+import com.yetanotherx.reddit.api.modules.RedditLink;
+import com.yetanotherx.reddit.api.modules.RedditSubreddit;
+import com.yetanotherx.reddit.redditbot.http.Transport;
+import com.yetanotherx.reddit.http.request.Request;
+import com.yetanotherx.reddit.http.request.RequestType;
+import com.yetanotherx.reddit.http.request.WebRequest;
+import com.yetanotherx.reddit.http.response.JSONResult;
+import com.yetanotherx.reddit.http.response.Response;
+import com.yetanotherx.reddit.util.collections.EasyHashMap;
 
 public class MainPlugin extends RedditPlugin {
 

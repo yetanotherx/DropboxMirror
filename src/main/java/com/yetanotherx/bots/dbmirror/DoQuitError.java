@@ -1,4 +1,4 @@
-package yetanotherx.dropboxmirrorbot;
+package com.yetanotherx.bots.dbmirror;
 
 class DoQuitError extends Exception {
     private static final long serialVersionUID = 1L;

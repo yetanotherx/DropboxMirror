@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>yetanotherx</groupId>
+    <groupId>com.yetanotherx</groupId>
     <artifactId>DropboxMirrorBot</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
@@ -23,7 +23,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>yetanotherx</groupId>
+            <groupId>com.yetanotherx</groupId>
             <artifactId>RedditBot</artifactId>
             <version>1.0</version>
         </dependency>
@@ -77,7 +77,7 @@
                             <Implementation-Vendor>Yetanotherx</Implementation-Vendor>
                             <Built-By>Yetanotherx</Built-By>
                             <Sealed>true</Sealed>
-                            <Main-Class>yetanotherx.dropboxmirrorbot.MainPlugin</Main-Class>
+                            <Main-Class>com.yetanotherx.bots.dbmirror.MainPlugin</Main-Class>
                         </manifestEntries>
                         <manifestSections>
                             <manifestSection>

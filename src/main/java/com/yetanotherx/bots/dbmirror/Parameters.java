@@ -1,4 +1,4 @@
-package yetanotherx.dropboxmirrorbot;
+package com.yetanotherx.bots.dbmirror;
 
 import com.beust.jcommander.Parameter;
 
