@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.yetanotherx.reddit.RedditPlugin;
+import com.yetanotherx.reddit.api.ListType;
 import com.yetanotherx.reddit.api.data.CommentData;
 import com.yetanotherx.reddit.api.data.LinkData;
 import com.yetanotherx.reddit.api.modules.ExternalDomain;
@@ -27,19 +28,20 @@ public class MainPlugin extends RedditPlugin {
         this.params = params;
     }
 
+    @SuppressWarnings("unchecked")
     public void run() throws InterruptedException {
         RedditCore.newFromUserAndPass(this, params.username, params.password).doLogin();
         String key = new StringBuilder().append(params.key).toString();
         params = null;
 
         ExternalDomain dom = ExternalDomain.newFromDomain(this, "dl.dropbox.com");
-        for (LinkData link : dom.getUsages()) {
+        for (LinkData link : dom.getUsages(ListType.NEW)) {
             RedditLink newLin = RedditLink.newFromLink(this, link);
 
             System.out.println("\n--------------------------------------------");
             System.out.println(link.getTitle());
             System.out.println();
-            
+
             try {
 
                 RedditSubreddit sr = RedditSubreddit.newFromName(this, link.getSubreddit());
@@ -48,6 +50,9 @@ public class MainPlugin extends RedditPlugin {
                     throw new DoQuitError("Subreddit does not have enough people to bother rehosting image.");
                 }
 
+                if( !link.getURL().startsWith("http://dl.dropbox.com") ) {
+                    throw new DoQuitError("WTF? This URL isn't dropbox...");
+                }
 
                 for (CommentData dat : newLin.getComments()) {
                     if (dat.getAuthor().equals("dropbox_mirror")) {
@@ -59,8 +64,8 @@ public class MainPlugin extends RedditPlugin {
                     }
                 }
 
-
-                if (!link.getURL().endsWith(".jpg") && !link.getURL().endsWith(".gif") && !link.getURL().endsWith(".png") && !link.getURL().endsWith(".jpeg")) {
+                String lc = link.getURL().toLowerCase();
+                if (!lc.endsWith(".jpg") && !lc.endsWith(".gif") && !lc.endsWith(".png") && !lc.endsWith(".jpeg")) {
                     throw new DoQuitError("It's not an image. Not gonna go on.");
                 }
 
@@ -73,8 +78,8 @@ public class MainPlugin extends RedditPlugin {
                 if (response.getHTTPCode().getCode() == 509) {
                     throw new DoQuitError("Oh no! I'm too late! The image already 509'd!");
                 }
-                
-                if( response.getContent().length() > 2000000 ) {
+
+                if (response.getContent().length() > 2000000) {
                     throw new DoQuitError("Image is too large to upload to imgur. Image size: " + (response.getContent().length() / 1000000) + " megabytes");
                 }
 
@@ -122,8 +127,8 @@ public class MainPlugin extends RedditPlugin {
                     text.append("*Was this a mistake, or is there a bug? Message [yetanotherx](http://reddit.com/user/yetanotherx)!*");
                     newLin.doReply(text.toString());
 
-                    System.out.println("All done! Sleeping for 10 minutes");
-                    Thread.sleep(600000);//10 minutes
+                    System.out.println("All done! Sleeping for 5 minutes");
+                    Thread.sleep(300000);//5 minutes
 
                 } else {
                     System.out.println("Something went wrong....");
